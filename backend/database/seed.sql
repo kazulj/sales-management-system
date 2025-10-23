@@ -4,7 +4,7 @@
 
 -- Admin User (password: admin123)
 INSERT OR IGNORE INTO users (id, email, password, full_name, role) VALUES
-(1, 'admin@sales.com', '$2a$10$rQzHq8L8mXvX9KX9qKX9qO9EXAMPLE', 'Admin User', 'admin');
+(1, 'admin@sales.com', '$2a$10$zOm.08MvEKJQj6R5jHHjAupE98kQIThUbKnl3jtXrLEhU7wlPZMPS', 'Admin User', 'admin');
 
 -- Sample Customers
 INSERT OR IGNORE INTO customers (name, email, phone, company, address, city, country) VALUES
