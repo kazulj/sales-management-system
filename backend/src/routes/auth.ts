@@ -50,12 +50,14 @@ router.post(
         'INSERT INTO users (email, password, full_name, role) VALUES (?, ?, ?, ?)'
       ).run(email, hashedPassword, full_name, role);
 
-      const userId = result.lastInsertRowid;
+      const userId = Number(result.lastInsertRowid);
 
       // Generate JWT token
-      const token = jwt.sign({ id: userId, email, role }, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-      });
+      const token = jwt.sign(
+        { id: userId, email, role },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
+      );
 
       res.status(201).json({
         message: 'User registered successfully',
@@ -105,7 +107,7 @@ router.post(
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
       );
 
       res.json({

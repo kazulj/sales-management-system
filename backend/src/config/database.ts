@@ -10,7 +10,7 @@ import { join } from 'path';
 const DB_PATH = process.env.DATABASE_PATH || join(__dirname, '../../database/sales.db');
 
 // Initialize database connection
-export const db = new Database(DB_PATH);
+export const db: Database.Database = new Database(DB_PATH);
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
