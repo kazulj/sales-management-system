@@ -31,12 +31,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Initialize database
-try {
-  initializeDatabase();
-} catch (error) {
+initializeDatabase().catch((error) => {
   console.error('Failed to initialize database:', error);
   process.exit(1);
-}
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

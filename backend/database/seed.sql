@@ -1,21 +1,27 @@
 -- ============================================
 -- Seed Data for Development
+-- PostgreSQL Version
 -- ============================================
 
 -- Admin User (password: admin123)
-INSERT OR IGNORE INTO users (id, email, password, full_name, role) VALUES
-(1, 'admin@sales.com', '$2a$10$zOm.08MvEKJQj6R5jHHjAupE98kQIThUbKnl3jtXrLEhU7wlPZMPS', 'Admin User', 'admin');
+INSERT INTO users (id, email, password, full_name, role) VALUES
+(1, 'admin@sales.com', '$2a$10$zOm.08MvEKJQj6R5jHHjAupE98kQIThUbKnl3jtXrLEhU7wlPZMPS', 'Admin User', 'admin')
+ON CONFLICT (id) DO NOTHING;
+
+-- Reset sequence for users
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 
 -- Sample Customers
-INSERT OR IGNORE INTO customers (name, email, phone, company, address, city, country) VALUES
+INSERT INTO customers (name, email, phone, company, address, city, country) VALUES
 ('John Doe', 'john@example.com', '+1-555-0101', 'ABC Corp', '123 Main St', 'New York', 'USA'),
 ('Jane Smith', 'jane@example.com', '+1-555-0102', 'XYZ Inc', '456 Oak Ave', 'Los Angeles', 'USA'),
 ('Bob Johnson', 'bob@example.com', '+1-555-0103', 'Tech Solutions', '789 Pine Rd', 'Chicago', 'USA'),
 ('Alice Williams', 'alice@example.com', '+1-555-0104', 'Digital Agency', '321 Elm St', 'Houston', 'USA'),
-('Charlie Brown', 'charlie@example.com', '+1-555-0105', 'Brown Enterprises', '654 Maple Dr', 'Phoenix', 'USA');
+('Charlie Brown', 'charlie@example.com', '+1-555-0105', 'Brown Enterprises', '654 Maple Dr', 'Phoenix', 'USA')
+ON CONFLICT (email) DO NOTHING;
 
 -- Sample Products
-INSERT OR IGNORE INTO products (name, description, price, cost, sku, category, stock_quantity) VALUES
+INSERT INTO products (name, description, price, cost, sku, category, stock_quantity) VALUES
 ('Premium Laptop', 'High-performance laptop for professionals', 1299.99, 800.00, 'LAP-001', 'Electronics', 50),
 ('Wireless Mouse', 'Ergonomic wireless mouse', 29.99, 15.00, 'MOU-001', 'Electronics', 200),
 ('USB-C Hub', 'Multi-port USB-C hub', 49.99, 25.00, 'HUB-001', 'Accessories', 150),
@@ -25,10 +31,11 @@ INSERT OR IGNORE INTO products (name, description, price, cost, sku, category, s
 ('Laptop Bag', 'Professional laptop carrying bag', 44.99, 22.00, 'BAG-001', 'Accessories', 120),
 ('External SSD', '1TB External SSD', 119.99, 60.00, 'SSD-001', 'Storage', 60),
 ('Wireless Headphones', 'Noise-cancelling headphones', 199.99, 100.00, 'HEA-001', 'Electronics', 40),
-('Phone Stand', 'Adjustable phone stand', 19.99, 10.00, 'STA-002', 'Accessories', 180);
+('Phone Stand', 'Adjustable phone stand', 19.99, 10.00, 'STA-002', 'Accessories', 180)
+ON CONFLICT (sku) DO NOTHING;
 
 -- Sample Sales (Recent months)
-INSERT OR IGNORE INTO sales (customer_id, user_id, sale_date, total_amount, discount, tax, status, payment_method) VALUES
+INSERT INTO sales (customer_id, user_id, sale_date, total_amount, discount, tax, status, payment_method) VALUES
 (1, 1, '2024-01-15', 1329.98, 0, 106.40, 'completed', 'Credit Card'),
 (2, 1, '2024-01-18', 159.97, 10.00, 11.20, 'completed', 'PayPal'),
 (3, 1, '2024-01-22', 89.99, 0, 7.20, 'completed', 'Credit Card'),
@@ -40,10 +47,11 @@ INSERT OR IGNORE INTO sales (customer_id, user_id, sale_date, total_amount, disc
 (4, 1, '2024-03-05', 99.98, 0, 8.00, 'completed', 'Debit Card'),
 (5, 1, '2024-03-12', 44.99, 0, 3.60, 'completed', 'Cash'),
 (1, 1, '2024-03-15', 229.97, 10.00, 17.60, 'completed', 'Credit Card'),
-(2, 1, '2024-03-20', 139.98, 0, 11.20, 'completed', 'PayPal');
+(2, 1, '2024-03-20', 139.98, 0, 11.20, 'completed', 'PayPal')
+ON CONFLICT DO NOTHING;
 
 -- Sample Sale Items
-INSERT OR IGNORE INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES
+INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES
 -- Sale 1
 (1, 1, 1, 1299.99, 1299.99),
 (1, 2, 1, 29.99, 29.99),
@@ -77,4 +85,5 @@ INSERT OR IGNORE INTO sale_items (sale_id, product_id, quantity, unit_price, sub
 (11, 9, 1, 199.99, 199.99),
 (11, 2, 1, 29.99, 29.99),
 -- Sale 12
-(12, 6, 2, 69.99, 139.98);
+(12, 6, 2, 69.99, 139.98)
+ON CONFLICT DO NOTHING;

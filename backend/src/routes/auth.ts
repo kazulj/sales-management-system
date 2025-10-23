@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
-import db from '../config/database';
+import pool from '../config/database';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -36,8 +36,12 @@ router.post(
       const { email, password, full_name, role = 'user' } = req.body;
 
       // Check if user exists
-      const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-      if (existingUser) {
+      const existingUser = await pool.query(
+        'SELECT id FROM users WHERE email = $1',
+        [email]
+      );
+
+      if (existingUser.rows.length > 0) {
         res.status(400).json({ error: 'Email already registered' });
         return;
       }
@@ -46,11 +50,12 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Insert user
-      const result = db.prepare(
-        'INSERT INTO users (email, password, full_name, role) VALUES (?, ?, ?, ?)'
-      ).run(email, hashedPassword, full_name, role);
+      const result = await pool.query(
+        'INSERT INTO users (email, password, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id',
+        [email, hashedPassword, full_name, role]
+      );
 
-      const userId = Number(result.lastInsertRowid);
+      const userId = result.rows[0].id;
 
       // Generate JWT token
       const token = jwt.sign(
@@ -89,12 +94,14 @@ router.post(
       const { email, password } = req.body;
 
       // Find user
-      const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
+      const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-      if (!user) {
+      if (result.rows.length === 0) {
         res.status(401).json({ error: 'Invalid credentials' });
         return;
       }
+
+      const user = result.rows[0];
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
@@ -131,18 +138,19 @@ router.post(
  * GET /api/auth/me
  * Get current user information
  */
-router.get('/me', authenticateToken, (req: AuthRequest, res: Response) => {
+router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const user = db
-      .prepare('SELECT id, email, full_name, role, created_at FROM users WHERE id = ?')
-      .get(req.user!.id);
+    const result = await pool.query(
+      'SELECT id, email, full_name, role, created_at FROM users WHERE id = $1',
+      [req.user!.id]
+    );
 
-    if (!user) {
+    if (result.rows.length === 0) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    res.json(user);
+    res.json(result.rows[0]);
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user information' });
