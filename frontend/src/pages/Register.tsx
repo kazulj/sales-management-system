@@ -1,13 +1,14 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { UserPlus, Mail, Lock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
@@ -17,12 +18,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const { data } = await authAPI.login(email, password);
+      const { data } = await authAPI.register({
+        email,
+        password,
+        full_name: fullName,
+      });
       login(data.token, data.user);
-      toast.success('ログインしました');
+      toast.success('アカウントを作成しました');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'ログインに失敗しました');
+      toast.error(error.response?.data?.error || '登録に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -36,17 +41,35 @@ export default function Login() {
         {/* Logo & Title */}
         <div className="text-center mb-8 animate-slide-down">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-xl mb-4">
-            <LogIn className="w-8 h-8 text-blue-600" />
+            <UserPlus className="w-8 h-8 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Sales Management</h1>
-          <p className="text-blue-100">売上管理システムへようこそ</p>
+          <p className="text-blue-100">新規アカウント作成</p>
         </div>
 
-        {/* Login Card */}
+        {/* Register Card */}
         <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 animate-slide-up">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">ログイン</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">新規登録</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full Name Input */}
+            <div>
+              <label className="label">氏名</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="input pl-10"
+                  placeholder="山田 太郎"
+                  required
+                />
+              </div>
+            </div>
+
             {/* Email Input */}
             <div>
               <label className="label">メールアドレス</label>
@@ -79,15 +102,10 @@ export default function Login() {
                   className="input pl-10"
                   placeholder="••••••••"
                   required
+                  minLength={6}
                 />
               </div>
-            </div>
-
-            {/* Demo Account Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-              <p className="text-blue-800 font-medium mb-1">デモアカウント</p>
-              <p className="text-blue-600">Email: admin@sales.com</p>
-              <p className="text-blue-600">Password: admin123</p>
+              <p className="mt-1 text-sm text-gray-500">6文字以上で入力してください</p>
             </div>
 
             {/* Submit Button */}
@@ -102,20 +120,20 @@ export default function Login() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  ログイン中...
+                  登録中...
                 </span>
               ) : (
-                'ログイン'
+                'アカウント作成'
               )}
             </button>
           </form>
 
-          {/* Register Link */}
+          {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              アカウントをお持ちでないですか？{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                新規登録
+              既にアカウントをお持ちですか？{' '}
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                ログイン
               </Link>
             </p>
           </div>
