@@ -33,7 +33,7 @@ router.post(
         return;
       }
 
-      const { email, password, full_name, role = 'user' } = req.body;
+      const { email, password, full_name } = req.body;
 
       // Check if user exists
       const existingUser = await pool.query(
@@ -45,6 +45,11 @@ router.post(
         res.status(400).json({ error: 'Email already registered' });
         return;
       }
+
+      // Check if this is the first user - make them admin
+      const userCount = await pool.query('SELECT COUNT(*) as count FROM users');
+      const isFirstUser = parseInt(userCount.rows[0].count) === 0;
+      const role = isFirstUser ? 'admin' : 'user';
 
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
