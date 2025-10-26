@@ -20,11 +20,11 @@ import customersRoutes from './routes/customers';
 import productsRoutes from './routes/products';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }));
+app.use(cors({ origin: '*' }));
 app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());
@@ -72,3 +72,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

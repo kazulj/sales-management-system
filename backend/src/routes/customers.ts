@@ -4,7 +4,7 @@
  */
 
 import { Router, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+
 import pool from '../config/database';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 
@@ -16,7 +16,7 @@ router.use(authenticateToken);
  * GET /api/customers
  * Get all customers
  */
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM customers ORDER BY created_at DESC');
     res.json({ customers: result.rows, total: result.rows.length });
@@ -110,3 +110,4 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 export default router;
+

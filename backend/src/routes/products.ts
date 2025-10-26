@@ -4,7 +4,6 @@
  */
 
 import { Router, Response } from 'express';
-import { body, validationResult } from 'express-validator';
 import pool from '../config/database';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 
@@ -16,7 +15,7 @@ router.use(authenticateToken);
  * GET /api/products
  * Get all products
  */
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
     res.json({ products: result.rows, total: result.rows.length });
