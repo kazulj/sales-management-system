@@ -7,35 +7,44 @@ import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+// CRITICAL DEBUG - Log immediately at module load
+console.log('========================================');
+console.log('🔍 DATABASE CONFIG DEBUG - Module Loading');
+console.log('========================================');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('POSTGRES_URL:', process.env.POSTGRES_URL ? `${process.env.POSTGRES_URL.substring(0, 30)}...` : 'NOT SET');
+console.log('POSTGRES_PRISMA_URL:', process.env.POSTGRES_PRISMA_URL ? `${process.env.POSTGRES_PRISMA_URL.substring(0, 30)}...` : 'NOT SET');
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 30)}...` : 'NOT SET');
+console.log('POSTGRES_URL_NON_POOLING:', process.env.POSTGRES_URL_NON_POOLING ? 'SET' : 'NOT SET');
+console.log('========================================');
+
 // Database connection pool
 // Use Vercel Postgres URL if available (production), otherwise use individual connection params (development)
-const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
+const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING;
 
-// Debug logging for production
-if (process.env.NODE_ENV === 'production') {
-  console.log('🔍 Database connection debug:');
-  console.log('  NODE_ENV:', process.env.NODE_ENV);
-  console.log('  POSTGRES_URL exists:', !!process.env.POSTGRES_URL);
-  console.log('  POSTGRES_PRISMA_URL exists:', !!process.env.POSTGRES_PRISMA_URL);
-  console.log('  DATABASE_URL exists:', !!process.env.DATABASE_URL);
-  console.log('  connectionString exists:', !!connectionString);
-  if (connectionString) {
-    console.log('  connectionString starts with:', connectionString.substring(0, 20) + '...');
-  }
-}
+console.log('Final connectionString:', connectionString ? `${connectionString.substring(0, 30)}...` : 'NOT SET - WILL USE LOCALHOST');
 
 export const pool = connectionString
-  ? new Pool({
-      connectionString,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
-    })
-  : new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME || 'sales_management',
-      user: process.env.DB_USER || 'kazuki',
-      password: process.env.DB_PASSWORD || 'windows2135',
-    });
+  ? (() => {
+      console.log('✅ Using connection string for database');
+      return new Pool({
+        connectionString,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+      });
+    })()
+  : (() => {
+      console.log('⚠️  No connection string - using localhost config');
+      console.log('  DB_HOST:', process.env.DB_HOST || 'localhost');
+      console.log('  DB_PORT:', process.env.DB_PORT || '5432');
+      console.log('  DB_NAME:', process.env.DB_NAME || 'sales_management');
+      return new Pool({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_NAME || 'sales_management',
+        user: process.env.DB_USER || 'kazuki',
+        password: process.env.DB_PASSWORD || 'windows2135',
+      });
+    })();
 
 /**
  * Initialize database schema
