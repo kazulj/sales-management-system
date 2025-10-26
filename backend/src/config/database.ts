@@ -9,7 +9,20 @@ import { join } from 'path';
 
 // Database connection pool
 // Use Vercel Postgres URL if available (production), otherwise use individual connection params (development)
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
+
+// Debug logging for production
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔍 Database connection debug:');
+  console.log('  NODE_ENV:', process.env.NODE_ENV);
+  console.log('  POSTGRES_URL exists:', !!process.env.POSTGRES_URL);
+  console.log('  POSTGRES_PRISMA_URL exists:', !!process.env.POSTGRES_PRISMA_URL);
+  console.log('  DATABASE_URL exists:', !!process.env.DATABASE_URL);
+  console.log('  connectionString exists:', !!connectionString);
+  if (connectionString) {
+    console.log('  connectionString starts with:', connectionString.substring(0, 20) + '...');
+  }
+}
 
 export const pool = connectionString
   ? new Pool({
